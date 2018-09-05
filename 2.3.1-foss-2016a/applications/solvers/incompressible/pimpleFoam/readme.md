@@ -12,7 +12,7 @@ pimpleFoam_profiling1
 
 ## How To Use
 1. pimpleFoam_profiling1
-2. pimpleFoam_profiling1
+2. mpirun -n 4 pimpleFoam_profiling1 -parallel
 
 ## Limit
 - 对于profiling : 目前把write()执行完毕后的"当地时间"输出注释掉，需要时可去掉注释
