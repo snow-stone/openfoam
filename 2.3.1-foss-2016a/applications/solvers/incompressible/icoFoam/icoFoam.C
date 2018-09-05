@@ -30,6 +30,11 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
+#include "fvIOoptionList.H"
+
+//userDefined
+#include <time.h>
+#include <fstream>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -40,11 +45,20 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     #include "createFields.H"
+	#include "createFvOptions.H"
     #include "initContinuityErrs.H"
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
+
+	//userDefined
+	mkDir("userDefinedLog");
+	ofstream dataWritingHistory
+	(
+	   	fileName(string("userDefinedLog")/string("dataWritingHistory")).c_str(),
+		ios_base::app
+	);
 
     while (runTime.loop())
     {
@@ -95,6 +109,15 @@ int main(int argc, char *argv[])
                 }
             }
 
+            solve
+            (
+                fvm::ddt(T)
+              + fvm::div(phi, T)
+              - fvm::laplacian(DT, T)
+             ==
+                fvOptions(T)
+            );
+
             #include "continuityErrs.H"
 
             U = HbyA - rAU*fvc::grad(p);
@@ -102,6 +125,18 @@ int main(int argc, char *argv[])
         }
 
         runTime.write();
+		if (runTime.outputTime() && Pstream::master())
+		{
+			time_t rawtime;
+			struct tm* timeinfo;
+			time (&rawtime);
+			timeinfo = localtime (&rawtime);
+			dataWritingHistory
+				<< runTime.timeName().c_str()
+				//<< " "
+				//<< asctime(timeinfo) // with a "\n" at the end
+			    << std::endl;
+		}
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
