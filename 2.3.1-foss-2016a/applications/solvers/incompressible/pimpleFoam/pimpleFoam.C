@@ -43,6 +43,10 @@ Description
 #include "IOMRFZoneList.H"
 #include "fixedFluxPressureFvPatchScalarField.H"
 
+//userDefined
+#include <time.h>
+#include <fstream>
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
@@ -59,6 +63,14 @@ int main(int argc, char *argv[])
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
+
+    //userDefined
+    mkDir("userDefinedLog");
+    ofstream dataWritingHistory
+    (
+        fileName(string("userDefinedLog")/string("dataWritingHistory")).c_str(),
+        ios_base::app
+    );
 
     while (runTime.run())
     {
@@ -88,6 +100,20 @@ int main(int argc, char *argv[])
         }
 
         runTime.write();
+
+        //userDefined
+        if (runTime.outputTime() && Pstream::master())
+        {
+            time_t rawtime;
+            struct tm* timeinfo;
+            time (&rawtime);
+            timeinfo = localtime (&rawtime);
+            dataWritingHistory
+                << runTime.timeName().c_str()
+                //<< " "
+                //<< asctime(timeinfo) // with a "\n" at the end
+                << std::endl;
+        }
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
