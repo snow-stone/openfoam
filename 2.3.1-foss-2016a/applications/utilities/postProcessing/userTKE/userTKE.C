@@ -2,6 +2,7 @@
 #include "argList.H"
 #include "timeSelector.H"
 
+#include <fstream>
 
 int main(int argc, char *argv[])
 {
@@ -9,11 +10,25 @@ int main(int argc, char *argv[])
 
     timeSelector::addOptions();
     argList::validArgs.append("timeOfAverageField");
+	Foam::argList::addBoolOption
+	(
+	    "noWriteField",
+	    "suppress writting for scalarField TKE"
+    );
+	Foam::argList::addBoolOption
+	(
+	    "noWriteLog",
+	    "suppress writting to userDefinedLog/TKE"
+    );
+    //argList::validArgs.append("noWriteField");
+    //argList::validArgs.append("noWriteLog");
 
-	#include "setRootCase.H"
+    #include "setRootCase.H"
     #include "createTime.H"
 
 	word timeOfAverageField(args.additionalArgs()[0]);
+    bool writeField = !args.optionFound("noWriteField");
+    bool writeLog = !args.optionFound("noWriteLog");
 
 	instantList timeDirs = timeSelector::select0(runTime, args);
 
@@ -31,6 +46,13 @@ int main(int argc, char *argv[])
 	{
 		Info<< "Reading U_mean" << " @ time step : " << timeOfAverageField << endl;
 		volVectorField U_mean(U_meanHeader, mesh);	
+
+		mkDir("userDefinedLog");
+		std::ofstream TKELog
+		(
+	   		fileName(string("userDefinedLog")/string("TKE")).c_str(),
+			ios_base::app
+		);
 
 		forAll(timeDirs, timeI)
 		{
@@ -65,7 +87,17 @@ int main(int argc, char *argv[])
 				Info<< "gSum(TKE) = " << gSum(TKE) << endl;
 				Info<< "weightedAverage(TKE) = " << TKE.weightedAverage(mesh.V()).value() << endl;
 
-				TKE.write();
+				if (writeLog)
+                {
+				    TKELog
+						<< runTime.timeName() << " "
+                        << gSum(TKE) << " "
+                        << TKE.weightedAverage(mesh.V()).value() << std::endl;
+				}
+				if (writeField)
+				{
+				    TKE.write();
+                                }
 			}
 			else
 			{
