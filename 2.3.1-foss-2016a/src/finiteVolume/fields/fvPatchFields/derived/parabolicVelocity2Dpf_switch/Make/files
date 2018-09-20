@@ -1,0 +1,3 @@
+pVFvPatchVectorField2Dpf_switch.C
+
+LIB = $(FOAM_USER_LIBBIN)/libparabolicVelocity2Dpf_switch
