@@ -23,7 +23,7 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Class
-    parabolicVelocityFvPatchVectorField2Dpf
+    turbulentFvPatchVectorField
 
 Description
     Boundary condition specifies a parabolic velocity inlet profile
@@ -31,20 +31,20 @@ Description
     flow direction n and direction of the parabolic coordinate y
 
 SourceFiles
-    parabolicVelocityFvPatchVectorField2Dpf.C
-	a 2D version
+    turbulentFvPatchVectorField.C
 
 Author
     Hrvoje Jasak, Wikki Ltd.  All rights reserved
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef parabolicVelocityFvPatchVectorField2Dpf_H
-#define parabolicVelocityFvPatchVectorField2Dpf_H
+#ifndef turbulentFvPatchVectorField_H
+#define turbulentFvPatchVectorField_H
 
-#include "Random.H" // 2Dp
 #include "fvPatchFields.H"
 #include "fixedValueFvPatchFields.H"
+
+#include "Random.H" //userDefined
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -52,10 +52,10 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-              Class parabolicVelocityFvPatchField Declaration
+              Class turbulentFvPatchVectorField Declaration
 \*---------------------------------------------------------------------------*/
 
-class parabolicVelocityFvPatchVectorField2Dpf
+class turbulentFvPatchVectorField
 :
     public fixedValueFvPatchVectorField
 {
@@ -76,31 +76,31 @@ class parabolicVelocityFvPatchVectorField2Dpf
 public:
 
     //- Runtime type information
-    TypeName("parabolicVelocity2Dpf");
+    TypeName("turbulentFvPatchVectorField");
 
 
     // Constructors
 
         //- Construct from patch and internal field
-        parabolicVelocityFvPatchVectorField2Dpf
+        turbulentFvPatchVectorField
         (
             const fvPatch&,
             const DimensionedField<vector, volMesh>&
         );
 
         //- Construct from patch, internal field and dictionary
-        parabolicVelocityFvPatchVectorField2Dpf
+        turbulentFvPatchVectorField
         (
             const fvPatch&,
             const DimensionedField<vector, volMesh>&,
             const dictionary&
         );
 
-        //- Construct by mapping given parabolicVelocityFvPatchVectorField2Dpf
+        //- Construct by mapping given turbulentFvPatchVectorField
         //  onto a new patch
-        parabolicVelocityFvPatchVectorField2Dpf
+        turbulentFvPatchVectorField
         (
-            const parabolicVelocityFvPatchVectorField2Dpf&,
+            const turbulentFvPatchVectorField&,
             const fvPatch&,
             const DimensionedField<vector, volMesh>&,
             const fvPatchFieldMapper&
@@ -111,14 +111,14 @@ public:
         {
             return tmp<fvPatchVectorField>
             (
-                new parabolicVelocityFvPatchVectorField2Dpf(*this)
+                new turbulentFvPatchVectorField(*this)
             );
         }
 
         //- Construct as copy setting internal field reference
-        parabolicVelocityFvPatchVectorField2Dpf
+        turbulentFvPatchVectorField
         (
-            const parabolicVelocityFvPatchVectorField2Dpf&,
+            const turbulentFvPatchVectorField&,
             const DimensionedField<vector, volMesh>&
         );
 
@@ -130,7 +130,7 @@ public:
         {
             return tmp<fvPatchVectorField>
             (
-                new parabolicVelocityFvPatchVectorField2Dpf(*this, iF)
+                new turbulentFvPatchVectorField(*this, iF)
             );
         }
 

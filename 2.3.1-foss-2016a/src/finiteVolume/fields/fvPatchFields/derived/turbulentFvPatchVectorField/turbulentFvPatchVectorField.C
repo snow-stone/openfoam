@@ -24,7 +24,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "parabolicVelocityFvPatchVectorField2Dpf.H"
+#include "turbulentFvPatchVectorField.H"
 #include "addToRunTimeSelectionTable.H"
 #include "fvPatchFieldMapper.H"
 #include "volFields.H"
@@ -37,7 +37,7 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-parabolicVelocityFvPatchVectorField2Dpf::parabolicVelocityFvPatchVectorField2Dpf
+turbulentFvPatchVectorField::turbulentFvPatchVectorField
 (
     const fvPatch& p,
     const DimensionedField<vector, volMesh>& iF
@@ -51,9 +51,9 @@ parabolicVelocityFvPatchVectorField2Dpf::parabolicVelocityFvPatchVectorField2Dpf
 {}
 
 
-parabolicVelocityFvPatchVectorField2Dpf::parabolicVelocityFvPatchVectorField2Dpf
+turbulentFvPatchVectorField::turbulentFvPatchVectorField
 (
-    const parabolicVelocityFvPatchVectorField2Dpf& ptf,
+    const turbulentFvPatchVectorField& ptf,
     const fvPatch& p,
     const DimensionedField<vector, volMesh>& iF,
     const fvPatchFieldMapper& mapper
@@ -67,7 +67,7 @@ parabolicVelocityFvPatchVectorField2Dpf::parabolicVelocityFvPatchVectorField2Dpf
 {}
 
 
-parabolicVelocityFvPatchVectorField2Dpf::parabolicVelocityFvPatchVectorField2Dpf
+turbulentFvPatchVectorField::turbulentFvPatchVectorField
 (
     const fvPatch& p,
     const DimensionedField<vector, volMesh>& iF,
@@ -82,7 +82,7 @@ parabolicVelocityFvPatchVectorField2Dpf::parabolicVelocityFvPatchVectorField2Dpf
 {
     if (mag(n_) < SMALL || mag(y_) < SMALL || mag(z_) < SMALL)
     {
-        FatalErrorIn("parabolicVelocityFvPatchVectorField2Dpf(dict)")
+        FatalErrorIn("turbulentFvPatchVectorField(dict)")
             << "n or y or z given with zero size not correct"
             << abort(FatalError);
     }
@@ -91,17 +91,17 @@ parabolicVelocityFvPatchVectorField2Dpf::parabolicVelocityFvPatchVectorField2Dpf
     y_ /= mag(y_);
 	z_ /= mag(z_);
 	
+	Info<< "Version with U_tau !" << endl;
 	Info<< "U_tau = " << U_tau_ << endl;
-	Info<< "This is the old version !" << endl;
 	Info<<"patchName : "<< patch().name() << endl;
 
     evaluate();
 }
 
 
-parabolicVelocityFvPatchVectorField2Dpf::parabolicVelocityFvPatchVectorField2Dpf
+turbulentFvPatchVectorField::turbulentFvPatchVectorField
 (
-    const parabolicVelocityFvPatchVectorField2Dpf& fcvpvf,
+    const turbulentFvPatchVectorField& fcvpvf,
     const DimensionedField<vector, volMesh>& iF
 )
 :
@@ -185,28 +185,19 @@ parabolicVelocityFvPatchVectorField2Dpf::parabolicVelocityFvPatchVectorField2Dpf
 	} 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void parabolicVelocityFvPatchVectorField2Dpf::updateCoeffs()
+void turbulentFvPatchVectorField::updateCoeffs()
 {
     if (updated())
     {
         return;
     }
 
-    // Get range and orientation
-    boundBox bb(patch().patch().localPoints(), true);
-
-    vector ctr = 0.5*(bb.max() + bb.min());
-
-    const vectorField& c = patch().Cf();
-
-    // Calculate local 1-D coordinate for the parabolic profile
-    // scalarField coord = 2*((c - ctr) & y_)/((bb.max() - bb.min()) & y_);
-	scalarField coord_pow2 = 4*( sqr((c - ctr) & y_)+sqr((c - ctr) & z_) )/(sqr((bb.max() - bb.min()) & y_));
+    // const
 	scalar R(0.004);
+	//scalar nu(1.0e-6);
 	//scalar U_tau_(0.0218); // to make the bulk velocity to 0.3
 	//scalar U_tau_(0.0363); // to make the bulk velocity to 0.5
 	//scalar U_tau_(0.0945); // to make the bulk velocity to 1.3
-	//Info << "U_tau ajust for bulk velocity 0.3" << endl;
 /*
 	Info << "envelope Rr(1)" << envelopeUrRMS(1) << endl;
 	Info << "envelope Rr(20)" << envelopeUrRMS(20) << endl;
@@ -215,93 +206,85 @@ void parabolicVelocityFvPatchVectorField2Dpf::updateCoeffs()
 	Info << "envelope Rz(20)" << envelopeUzRMS(20) << endl;
 	Info << "envelope Rz(100)" << envelopeUzRMS(100) << endl;
 */
-	//scalar nu(1.0e-6);
+
+    // Get range and orientation
+    // Maybe better to have a fixed const value for ctr
+    boundBox bb(patch().patch().localPoints(), true);
+    vector ctr = 0.5*(bb.max() + bb.min());
+
+    const vectorField& c = patch().Cf();
+
+	scalarField coord_pow2 = 4*( sqr((c - ctr) & y_)+sqr((c - ctr) & z_) )/(sqr((bb.max() - bb.min()) & y_));
+
 	scalarField y1 = R * (1 - sqrt(coord_pow2));
-	scalarField yPlus = y1 * U_tau_ / 1.0e-6;
+	scalarField yPlus = y1 * U_tau_ / 1.0e-6;  // consider replace with nu
 	//Info << "here is y : " << y1 << endl;
 	//Info << "here is yPlus : " << yPlus << endl;
-	
-	Info << "max of yPlus = " << max(yPlus) << endl;
+	Info << "max of yPlus = " << max(yPlus) << endl; // many lines of output when reconstructing
 	Info << "min of yPlus = " << min(yPlus) << endl;
 
-	// after calculating the mean velocity profile
-	//scalar apt(0.4);
-	//scalar apt(0.);
-	//scalarField apt_array=apt*(1.0 - sqr(sqrt(coord_pow2)-1.0));
 	scalarField envelope_Rz = U_tau_ * envelopeUzRMS(yPlus);
 	scalarField envelope_Rr = U_tau_ * envelopeUrRMS(yPlus);
+
+    // Random part
 	// Random ranGen_(label(0))
 	Random ranGen_(label(this->db().time().timeIndex()));
-	//vector* vect;
-	//vect = new vector(0.5, 0.5, 0.5);
-	//vector vect(0.5, 0.5, 0.5);
-	//vector vect;
-	//vector(0.5, 0.5, 0.5);
- //   if (curTimeIndex_ != this->db().time().timeIndex())
- //   {
-	// 	DOES vector must be included ??????????????????????????????????
-    //
-        Field<vector>& patchField = *this; // change <Type> to vector 
 
-        Field<vector> randomField(this->size()); // change <Type> to vector 
-        Field<vector> envelopeField(this->size()); // change <Type> to vector 
+    Field<vector>& patchField = *this; // change <Type> to vector 
 
-//	Info<<"attention !!!!!!!!!!!!!!"
-//	<< "this is the no perturbated version running !!!!" << endl;
+    Field<vector> randomField(this->size()); // change <Type> to vector 
+    Field<vector> envelopeField(this->size()); // change <Type> to vector 
 
-        forAll(patchField, facei)
-        {
-            ranGen_.randomise(randomField[facei]);
-			envelopeField[facei]
-					= vector(
-							envelope_Rr[facei]/2.0,
-							envelope_Rr[facei]/2.0,
-							envelope_Rz[facei]
-						);
-			//randomField[facei]=2*(randomField[facei]-vect);
-			if (yPlus[facei] < 5)
-			{
-				//Info << "yPlus = " << yPlus[facei] << endl;
-				patchField[facei] = n_ * U_tau_ * viscousLayer(yPlus[facei]);
-			}
-			else if ( 5 <= yPlus[facei] && yPlus[facei] < 30)
-			{
-				patchField[facei] = n_ * U_tau_ * bufferLayer(yPlus[facei]);
-			}
-			else if (yPlus[facei] >= 30) // no upper limit here, there should be one
-			{
-				patchField[facei] = n_ * U_tau_ * logLayer(yPlus[facei]);
-			}
-			else
-			{
-				Info << "Exception ! Wrong value of yPlus !" << endl;;
-			}
-        }
 
-        // Correction-factor to compensate for the loss of RMS fluctuation
-        // due to the temporal correlation introduced by the alpha parameter.
+    forAll(patchField, facei)
+    {
+        ranGen_.randomise(randomField[facei]);
+	    envelopeField[facei]
+			= vector(                          //ToDo : this is (x, y ,z) cartesian... Not good !! Leave it be for this version
+						envelope_Rr[facei]/2.0,
+						envelope_Rr[facei]/2.0,
+						envelope_Rz[facei]
+					);
+		if (yPlus[facei] < 5)
+		{
+			//Info << "yPlus = " << yPlus[facei] << endl;
+			patchField[facei] = n_ * U_tau_ * viscousLayer(yPlus[facei]);
+		}
+		else if ( 5 <= yPlus[facei] && yPlus[facei] < 30)
+		{
+			patchField[facei] = n_ * U_tau_ * bufferLayer(yPlus[facei]);
+		}
+		else if (yPlus[facei] >= 30) // no upper limit here, there should be one
+		{
+			patchField[facei] = n_ * U_tau_ * logLayer(yPlus[facei]);
+		}
+		else
+		{
+			Info << "Exception ! Wrong value of yPlus !" << endl;;
+		}
+    }
 
-		randomField = 2*(randomField - 0.5*pTraits<vector>::one);
+    //ToDo: consider relaxation and large structure (in contrary to point to point perturbation)
+    // Correction-factor to compensate for the loss of RMS fluctuation
+    // due to the temporal correlation introduced by the alpha parameter.
 
-        patchField =
-          	patchField
-          //+ apt * randomField;
-          //+ apt_array * randomField;
-		  + cmptMultiply
+	randomField = 2*(randomField - 0.5*pTraits<vector>::one);
+
+    patchField = patchField
+	    + cmptMultiply
 		  (
-				envelopeField,			
-				randomField
+		    envelopeField,			
+		    randomField
 		  );
-
-  //      curTimeIndex_ = this->db().time().timeIndex();
-  //  }
 
     fixedValueFvPatchField<vector>::updateCoeffs(); // change <Type> to vector 
 }
 
 
-// Write
-void parabolicVelocityFvPatchVectorField2Dpf::write(Ostream& os) const
+// Write : this is important ! if new data member is add, this must be be adapted. 
+// DecomposePar will write to processor*/timeDir/U using this method.
+// You will not want in the decomposed case member list are not complete.
+void turbulentFvPatchVectorField::write(Ostream& os) const
 {
     fvPatchVectorField::write(os);
     os.writeKeyword("U_tau")
@@ -318,7 +301,7 @@ void parabolicVelocityFvPatchVectorField2Dpf::write(Ostream& os) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-makePatchTypeField(fvPatchVectorField, parabolicVelocityFvPatchVectorField2Dpf);
+makePatchTypeField(fvPatchVectorField, turbulentFvPatchVectorField); // this is important too. maybe creating the real class member
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
