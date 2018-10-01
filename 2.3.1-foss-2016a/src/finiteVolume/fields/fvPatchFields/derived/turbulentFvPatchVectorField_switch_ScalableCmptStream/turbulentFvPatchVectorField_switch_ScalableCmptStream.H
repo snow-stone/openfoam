@@ -23,7 +23,7 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Class
-    turbulentFvPatchVectorField_switch
+    turbulentFvPatchVectorField_switch_ScalableCmptStream
 
 Description
     Boundary condition specifies a parabolic velocity inlet profile
@@ -31,15 +31,15 @@ Description
     flow direction n and direction of the parabolic coordinate y
 
 SourceFiles
-    turbulentFvPatchVectorField_switch.C
+    turbulentFvPatchVectorField_switch_ScalableCmptStream.C
 
 Author
     Hrvoje Jasak, Wikki Ltd.  All rights reserved
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef turbulentFvPatchVectorField_switch_H
-#define turbulentFvPatchVectorField_switch_H
+#ifndef turbulentFvPatchVectorField_switch_ScalableCmptStream_H
+#define turbulentFvPatchVectorField_switch_ScalableCmptStream_H
 
 #include "fvPatchFields.H"
 #include "fixedValueFvPatchFields.H"
@@ -52,10 +52,10 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-              Class turbulentFvPatchVectorField_switch Declaration
+              Class turbulentFvPatchVectorField_switch_ScalableCmptStream Declaration
 \*---------------------------------------------------------------------------*/
 
-class turbulentFvPatchVectorField_switch
+class turbulentFvPatchVectorField_switch_ScalableCmptStream
 :
     public fixedValueFvPatchVectorField
 {
@@ -66,6 +66,9 @@ class turbulentFvPatchVectorField_switch
 
         //- U_tau
         scalar U_tau_;
+
+		//- scale for turbulence level
+		scalar s_;
 
         //- Flow direction
         vector n_;
@@ -79,31 +82,31 @@ class turbulentFvPatchVectorField_switch
 public:
 
     //- Runtime type information
-    TypeName("turbulentFvPatchVectorField_switch");
+    TypeName("turbulentFvPatchVectorField_switch_ScalableCmptStream");
 
 
     // Constructors
 
         //- Construct from patch and internal field
-        turbulentFvPatchVectorField_switch
+        turbulentFvPatchVectorField_switch_ScalableCmptStream
         (
             const fvPatch&,
             const DimensionedField<vector, volMesh>&
         );
 
         //- Construct from patch, internal field and dictionary
-        turbulentFvPatchVectorField_switch
+        turbulentFvPatchVectorField_switch_ScalableCmptStream
         (
             const fvPatch&,
             const DimensionedField<vector, volMesh>&,
             const dictionary&
         );
 
-        //- Construct by mapping given turbulentFvPatchVectorField_switch
+        //- Construct by mapping given turbulentFvPatchVectorField_switch_ScalableCmptStream
         //  onto a new patch
-        turbulentFvPatchVectorField_switch
+        turbulentFvPatchVectorField_switch_ScalableCmptStream
         (
-            const turbulentFvPatchVectorField_switch&,
+            const turbulentFvPatchVectorField_switch_ScalableCmptStream&,
             const fvPatch&,
             const DimensionedField<vector, volMesh>&,
             const fvPatchFieldMapper&
@@ -114,14 +117,14 @@ public:
         {
             return tmp<fvPatchVectorField>
             (
-                new turbulentFvPatchVectorField_switch(*this)
+                new turbulentFvPatchVectorField_switch_ScalableCmptStream(*this)
             );
         }
 
         //- Construct as copy setting internal field reference
-        turbulentFvPatchVectorField_switch
+        turbulentFvPatchVectorField_switch_ScalableCmptStream
         (
-            const turbulentFvPatchVectorField_switch&,
+            const turbulentFvPatchVectorField_switch_ScalableCmptStream&,
             const DimensionedField<vector, volMesh>&
         );
 
@@ -133,7 +136,7 @@ public:
         {
             return tmp<fvPatchVectorField>
             (
-                new turbulentFvPatchVectorField_switch(*this, iF)
+                new turbulentFvPatchVectorField_switch_ScalableCmptStream(*this, iF)
             );
         }
 

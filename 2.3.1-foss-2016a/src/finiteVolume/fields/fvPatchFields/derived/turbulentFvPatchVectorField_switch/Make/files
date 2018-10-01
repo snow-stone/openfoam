@@ -1,3 +1,0 @@
-turbulentFvPatchVectorField_switch.C
-
-LIB = $(FOAM_USER_LIBBIN)/libturbulentFvPatchVectorField_switch

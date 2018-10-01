@@ -24,7 +24,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "turbulentFvPatchVectorField_switch.H"
+#include "turbulentFvPatchVectorField_switch_ScalableCmptStream.H"
 #include "addToRunTimeSelectionTable.H"
 #include "fvPatchFieldMapper.H"
 #include "volFields.H"
@@ -37,7 +37,7 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-turbulentFvPatchVectorField_switch::turbulentFvPatchVectorField_switch
+turbulentFvPatchVectorField_switch_ScalableCmptStream::turbulentFvPatchVectorField_switch_ScalableCmptStream
 (
     const fvPatch& p,
     const DimensionedField<vector, volMesh>& iF
@@ -46,15 +46,16 @@ turbulentFvPatchVectorField_switch::turbulentFvPatchVectorField_switch
     fixedValueFvPatchVectorField(p, iF),
     turbulenceSwitch_(false),
     U_tau_(0),
+	s_(1.0),
     n_(1, 0, 0),
     y_(0, 1, 0),
 	z_(0, 0, 1)
 {}
 
 
-turbulentFvPatchVectorField_switch::turbulentFvPatchVectorField_switch
+turbulentFvPatchVectorField_switch_ScalableCmptStream::turbulentFvPatchVectorField_switch_ScalableCmptStream
 (
-    const turbulentFvPatchVectorField_switch& ptf,
+    const turbulentFvPatchVectorField_switch_ScalableCmptStream& ptf,
     const fvPatch& p,
     const DimensionedField<vector, volMesh>& iF,
     const fvPatchFieldMapper& mapper
@@ -63,13 +64,14 @@ turbulentFvPatchVectorField_switch::turbulentFvPatchVectorField_switch
     fixedValueFvPatchVectorField(ptf, p, iF, mapper),
     turbulenceSwitch_(ptf.turbulenceSwitch_),
     U_tau_(ptf.U_tau_),
+	s_(ptf.s_),
     n_(ptf.n_),
     y_(ptf.y_),
 	z_(ptf.z_)
 {}
 
 
-turbulentFvPatchVectorField_switch::turbulentFvPatchVectorField_switch
+turbulentFvPatchVectorField_switch_ScalableCmptStream::turbulentFvPatchVectorField_switch_ScalableCmptStream
 (
     const fvPatch& p,
     const DimensionedField<vector, volMesh>& iF,
@@ -79,13 +81,14 @@ turbulentFvPatchVectorField_switch::turbulentFvPatchVectorField_switch
     fixedValueFvPatchVectorField(p, iF),
 	turbulenceSwitch_(readBool(dict.lookup("turbulenceSwitch"))),
     U_tau_(readScalar(dict.lookup("U_tau"))),
+    s_(readScalar(dict.lookup("s"))),
     n_(dict.lookup("n")),
     y_(dict.lookup("y")),
 	z_(dict.lookup("z"))
 {
     if (mag(n_) < SMALL || mag(y_) < SMALL || mag(z_) < SMALL)
     {
-        FatalErrorIn("turbulentFvPatchVectorField_switch(dict)")
+        FatalErrorIn("turbulentFvPatchVectorField_switch_ScalableCmptStream(dict)")
             << "n or y or z given with zero size not correct"
             << abort(FatalError);
     }
@@ -94,18 +97,19 @@ turbulentFvPatchVectorField_switch::turbulentFvPatchVectorField_switch
     y_ /= mag(y_);
 	z_ /= mag(z_);
 	
-	Info<< "Version switch !" << endl;
+	Info<< "Version switch_ScalableCmptStream !" << endl;
 	Info<< "TurbulenceSwitch : " << turbulenceSwitch_ << endl;
 	Info<< "U_tau = " << U_tau_ << endl;
+	Info<< "scalable factor = " << s_ << endl;
 	Info<<" patchName : "<< patch().name() << endl;
 
     evaluate();
 }
 
 
-turbulentFvPatchVectorField_switch::turbulentFvPatchVectorField_switch
+turbulentFvPatchVectorField_switch_ScalableCmptStream::turbulentFvPatchVectorField_switch_ScalableCmptStream
 (
-    const turbulentFvPatchVectorField_switch& fcvpvf,
+    const turbulentFvPatchVectorField_switch_ScalableCmptStream& fcvpvf,
     const DimensionedField<vector, volMesh>& iF
 )
 :
@@ -189,7 +193,7 @@ turbulentFvPatchVectorField_switch::turbulentFvPatchVectorField_switch
 	} 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void turbulentFvPatchVectorField_switch::updateCoeffs()
+void turbulentFvPatchVectorField_switch_ScalableCmptStream::updateCoeffs()
 {
     if (updated())
     {
@@ -255,11 +259,8 @@ void turbulentFvPatchVectorField_switch::updateCoeffs()
     {
         ranGen_.randomise(randomField[facei]);
 	    envelopeField[facei]
-			= vector(                          //ToDo : this is (x, y ,z) cartesian... Not good !! Leave it be for this version
-						envelope_Rr[facei]/2.0,
-						envelope_Rr[facei]/2.0,
-						envelope_Rz[facei]
-					);
+			= envelope_Rz[facei] * n_ * s_ ;
+
 		if (yPlus[facei] < 5)
 		{
 			//Info << "yPlus = " << yPlus[facei] << endl;
@@ -299,13 +300,15 @@ void turbulentFvPatchVectorField_switch::updateCoeffs()
 // Write : this is important ! if new data member is add, this must be be adapted. 
 // DecomposePar will write to processor*/timeDir/U using this method.
 // You will not want in the decomposed case member list are not complete.
-void turbulentFvPatchVectorField_switch::write(Ostream& os) const
+void turbulentFvPatchVectorField_switch_ScalableCmptStream::write(Ostream& os) const
 {
     fvPatchVectorField::write(os);
     os.writeKeyword("turbulenceSwitch")
         << turbulenceSwitch_ << token::END_STATEMENT << nl;
     os.writeKeyword("U_tau")
         << U_tau_ << token::END_STATEMENT << nl;
+    os.writeKeyword("s")
+        << s_ << token::END_STATEMENT << nl;
     os.writeKeyword("n")
         << n_ << token::END_STATEMENT << nl;
     os.writeKeyword("y")
@@ -318,7 +321,7 @@ void turbulentFvPatchVectorField_switch::write(Ostream& os) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-makePatchTypeField(fvPatchVectorField, turbulentFvPatchVectorField_switch); // this is important too. maybe creating the real class member
+makePatchTypeField(fvPatchVectorField, turbulentFvPatchVectorField_switch_ScalableCmptStream); // this is important too. maybe creating the real class member
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
