@@ -44,6 +44,7 @@ turbulentFvPatchVectorField_switch::turbulentFvPatchVectorField_switch
 )
 :
     fixedValueFvPatchVectorField(p, iF),
+    turbulenceSwitch_(false),
     U_tau_(0),
     n_(1, 0, 0),
     y_(0, 1, 0),
@@ -60,6 +61,7 @@ turbulentFvPatchVectorField_switch::turbulentFvPatchVectorField_switch
 )
 :
     fixedValueFvPatchVectorField(ptf, p, iF, mapper),
+    turbulenceSwitch_(ptf.turbulenceSwitch_),
     U_tau_(ptf.U_tau_),
     n_(ptf.n_),
     y_(ptf.y_),
@@ -75,6 +77,7 @@ turbulentFvPatchVectorField_switch::turbulentFvPatchVectorField_switch
 )
 :
     fixedValueFvPatchVectorField(p, iF),
+	turbulenceSwitch_(readBool(dict.lookup("turbulenceSwitch"))),
     U_tau_(readScalar(dict.lookup("U_tau"))),
     n_(dict.lookup("n")),
     y_(dict.lookup("y")),
@@ -91,9 +94,10 @@ turbulentFvPatchVectorField_switch::turbulentFvPatchVectorField_switch
     y_ /= mag(y_);
 	z_ /= mag(z_);
 	
-	Info<< "Version with U_tau !" << endl;
+	Info<< "Version switch !" << endl;
+	Info<< "TurbulenceSwitch : " << turbulenceSwitch_ << endl;
 	Info<< "U_tau = " << U_tau_ << endl;
-	Info<<"patchName : "<< patch().name() << endl;
+	Info<<" patchName : "<< patch().name() << endl;
 
     evaluate();
 }
