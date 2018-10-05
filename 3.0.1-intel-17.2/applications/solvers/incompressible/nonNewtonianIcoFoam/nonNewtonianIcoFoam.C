@@ -33,6 +33,11 @@ Description
 #include "singlePhaseTransportModel.H"
 #include "pisoControl.H"
 
+//userDefined
+#include "fvIOoptionList.H"
+#include <time.h>
+#include <fstream>
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
@@ -44,11 +49,20 @@ int main(int argc, char *argv[])
     pisoControl piso(mesh);
 
     #include "createFields.H"
+    #include "createFvOptions.H"    //userDefined
     #include "initContinuityErrs.H"
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
+
+    //userDefined
+    mkDir("userDefinedLog");
+    std::ofstream dataWritingHistory
+    (
+        fileName(string("userDefinedLog")/string("dataWritingHistory")).c_str(),
+        ios_base::app
+    );
 
     while (runTime.loop())
     {
@@ -113,9 +127,33 @@ int main(int argc, char *argv[])
 
             U = HbyA - rAU*fvc::grad(p);
             U.correctBoundaryConditions();
+
+
+            solve
+            (
+                fvm::ddt(T)
+              + fvm::div(phi, T)
+              - fvm::laplacian(DT, T)
+             ==
+                fvOptions(T)
+            );
+
         }
 
         runTime.write();
+
+        if (runTime.outputTime() && Pstream::master())
+        {
+            time_t rawtime;
+            struct tm* timeinfo;
+            time (&rawtime);
+            timeinfo = localtime (&rawtime);
+            dataWritingHistory
+                << runTime.timeName().c_str()
+              //<< " "
+              //              //<< asctime(timeinfo) // with a "\n" at the end
+                << std::endl;
+        }
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
