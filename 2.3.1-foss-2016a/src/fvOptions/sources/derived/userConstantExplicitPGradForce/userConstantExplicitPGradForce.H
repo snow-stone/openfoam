@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::fv::pressureGradientExplicitSource
+    Foam::fv::userConstantExplicitPGradForce
 
 Description
     Creates a pressure gradient source
@@ -32,7 +32,7 @@ Description
     \heading Source usage
     Example usage:
     \verbatim
-    pressureGradientExplicitSourceCoeffs
+    userConstantExplicitPGradForceCoeffs
     {
         fieldNames  (U);                        // name of velocity field
         Ubar        (10.0 0 0);                 // desired average velocity
@@ -43,12 +43,12 @@ Description
 
 
 SourceFiles
-    pressureGradientExplicitSource.C
+    userConstantExplicitPGradForce.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef pressureGradientExplicitSource_H
-#define pressureGradientExplicitSource_H
+#ifndef userConstantExplicitPGradForce_H
+#define userConstantExplicitPGradForce_H
 
 #include "autoPtr.H"
 #include "topoSetSource.H"
@@ -65,10 +65,10 @@ namespace fv
 {
 
 /*---------------------------------------------------------------------------*\
-               Class pressureGradientExplicitSource Declaration
+               Class userConstantExplicitPGradForce Declaration
 \*---------------------------------------------------------------------------*/
 
-class pressureGradientExplicitSource
+class userConstantExplicitPGradForce
 :
     public option
 {
@@ -99,22 +99,22 @@ class pressureGradientExplicitSource
         void update(fvMatrix<vector>& eqn);
 
         //- Disallow default bitwise copy construct
-        pressureGradientExplicitSource(const pressureGradientExplicitSource&);
+        userConstantExplicitPGradForce(const userConstantExplicitPGradForce&);
 
         //- Disallow default bitwise assignment
-        void operator=(const pressureGradientExplicitSource&);
+        void operator=(const userConstantExplicitPGradForce&);
 
 
 public:
 
     //- Runtime type information
-    TypeName("pressureGradientExplicitSource");
+    TypeName("userConstantExplicitPGradForce");
 
 
     // Constructors
 
         //- Construct from explicit source name and mesh
-        pressureGradientExplicitSource
+        userConstantExplicitPGradForce
         (
             const word& sourceName,
             const word& modelType,

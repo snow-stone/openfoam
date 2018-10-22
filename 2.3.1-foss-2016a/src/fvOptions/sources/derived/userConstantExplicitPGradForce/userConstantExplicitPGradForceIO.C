@@ -23,15 +23,15 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "pressureGradientExplicitSource.H"
+#include "userConstantExplicitPGradForce.H"
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-void Foam::fv::pressureGradientExplicitSource::writeData(Ostream& os) const
+void Foam::fv::userConstantExplicitPGradForce::writeData(Ostream& os) const
 {
     notImplemented
     (
-        "void Foam::fv::pressureGradientExplicitSource::writeData"
+        "void Foam::fv::userConstantExplicitPGradForce::writeData"
         "("
             "Ostream&"
         ") const"
@@ -39,11 +39,11 @@ void Foam::fv::pressureGradientExplicitSource::writeData(Ostream& os) const
 }
 
 
-bool Foam::fv::pressureGradientExplicitSource::read(const dictionary& dict)
+bool Foam::fv::userConstantExplicitPGradForce::read(const dictionary& dict)
 {
     notImplemented
     (
-        "bool Foam::fv::pressureGradientExplicitSource::read"
+        "bool Foam::fv::userConstantExplicitPGradForce::read"
         "("
             "const dictionary&"
         ") const"

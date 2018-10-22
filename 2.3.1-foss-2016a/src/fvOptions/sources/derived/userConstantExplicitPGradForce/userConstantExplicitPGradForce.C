@@ -23,7 +23,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "pressureGradientExplicitSource.H"
+#include "userConstantExplicitPGradForce.H"
 #include "fvMatrices.H"
 #include "DimensionedField.H"
 #include "IFstream.H"
@@ -35,12 +35,12 @@ namespace Foam
 {
 namespace fv
 {
-    defineTypeNameAndDebug(pressureGradientExplicitSource, 0);
+    defineTypeNameAndDebug(userConstantExplicitPGradForce, 0);
 
     addToRunTimeSelectionTable
     (
         option,
-        pressureGradientExplicitSource,
+        userConstantExplicitPGradForce,
         dictionary
     );
 }
@@ -49,7 +49,7 @@ namespace fv
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-void Foam::fv::pressureGradientExplicitSource::writeProps
+void Foam::fv::userConstantExplicitPGradForce::writeProps
 (
     const scalar gradP
 ) const
@@ -77,7 +77,7 @@ void Foam::fv::pressureGradientExplicitSource::writeProps
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::fv::pressureGradientExplicitSource::pressureGradientExplicitSource
+Foam::fv::userConstantExplicitPGradForce::userConstantExplicitPGradForce
 (
     const word& sourceName,
     const word& modelType,
@@ -87,19 +87,25 @@ Foam::fv::pressureGradientExplicitSource::pressureGradientExplicitSource
 :
     option(sourceName, modelType, dict, mesh),
     Ubar_(coeffs_.lookup("Ubar")),
-    gradP0_(0.0),
+    gradP0_(readScalar(coeffs_.lookup("gradP0"))),
     dGradP_(0.0),
     flowDir_(Ubar_/mag(Ubar_)),
     invAPtr_(NULL)
 {
-    coeffs_.lookup("fieldNames") >> fieldNames_;
+	coeffs_.lookup("fieldNames") >> fieldNames_;
+
+	Info << "#####################" << endl;
+	Info << "Inside constructor : " << endl;
+	Info << "Ubar = " << Ubar_ << endl;
+	Info << "gradP0 = " << gradP0_ << endl;
+	Info << "#####################" << endl;
 
     if (fieldNames_.size() != 1)
     {
         FatalErrorIn
         (
-            "Foam::fv::pressureGradientExplicitSource::"
-            "pressureGradientExplicitSource"
+            "Foam::fv::userConstantExplicitPGradForce::"
+            "userConstantExplicitPGradForce"
             "("
                 "const word&, "
                 "const word&, "
@@ -131,7 +137,7 @@ Foam::fv::pressureGradientExplicitSource::pressureGradientExplicitSource
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void Foam::fv::pressureGradientExplicitSource::correct(volVectorField& U)
+void Foam::fv::userConstantExplicitPGradForce::correct(volVectorField& U)
 {
     const scalarField& rAU = invAPtr_().internalField();
 
@@ -157,17 +163,20 @@ void Foam::fv::pressureGradientExplicitSource::correct(volVectorField& U)
 
     // Calculate the pressure gradient increment needed to adjust the average
     // flow-rate to the desired value
-    dGradP_ = (mag(Ubar_) - magUbarAve)/rAUave;
+    dGradP_ = 0;
 
     // Apply correction to velocity field
+	/*
     forAll(cells_, i)
     {
         label cellI = cells_[i];
         U[cellI] += flowDir_*rAU[cellI]*dGradP_;
     }
+	*/
 
     scalar gradP = gradP0_ + dGradP_;
 
+	Info<< "Here print one rAU for dimension : " << rAU[0] << endl;
     Info<< "Pressure gradient source: uncorrected Ubar = " << magUbarAve
         << ", pressure gradient = " << gradP << endl;
 
@@ -175,7 +184,7 @@ void Foam::fv::pressureGradientExplicitSource::correct(volVectorField& U)
 }
 
 
-void Foam::fv::pressureGradientExplicitSource::addSup
+void Foam::fv::userConstantExplicitPGradForce::addSup
 (
     fvMatrix<vector>& eqn,
     const label fieldI
@@ -203,7 +212,7 @@ void Foam::fv::pressureGradientExplicitSource::addSup
 }
 
 
-void Foam::fv::pressureGradientExplicitSource::addSup
+void Foam::fv::userConstantExplicitPGradForce::addSup
 (
     const volScalarField& rho,
     fvMatrix<vector>& eqn,
@@ -214,7 +223,7 @@ void Foam::fv::pressureGradientExplicitSource::addSup
 }
 
 
-void Foam::fv::pressureGradientExplicitSource::setValue
+void Foam::fv::userConstantExplicitPGradForce::setValue
 (
     fvMatrix<vector>& eqn,
     const label
