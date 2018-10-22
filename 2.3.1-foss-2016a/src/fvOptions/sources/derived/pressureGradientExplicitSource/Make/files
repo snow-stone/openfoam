@@ -1,0 +1,4 @@
+pressureGradientExplicitSource.C
+pressureGradientExplicitSourceIO.C
+
+LIB = $(FOAM_USER_LIBBIN)/libfvOptionUserConstantExplicitPGradForce
