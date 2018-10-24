@@ -41,6 +41,10 @@ Description
 #include "fvIOoptionList.H"
 #include "fixedFluxPressureFvPatchScalarField.H"
 
+//userDefined
+#include <time.h>
+#include <fstream>
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
@@ -60,6 +64,14 @@ int main(int argc, char *argv[])
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
+
+    //userDefined
+	mkDir("userDefinedLog");
+	std::ofstream dataWritingHistory
+	(
+	    fileName(string("userDefinedLog")/string("dataWritingHistory")).c_str(),
+	    ios_base::app
+	);
 
     while (runTime.run())
     {
@@ -90,6 +102,13 @@ int main(int argc, char *argv[])
         }
 
         runTime.write();
+
+        if (runTime.outputTime() && Pstream::master())
+		{
+			dataWritingHistory
+			    << runTime.timeName().c_str()
+			    << std::endl;
+		}
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
