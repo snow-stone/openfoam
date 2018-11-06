@@ -153,19 +153,41 @@ int main(int argc, char *argv[])
 
 		    const polyBoundaryMesh& pp = mesh.boundaryMesh();
 			const label patchLabel = pp.findPatchID(patchName);
+			volScalarField::GeometricBoundaryField d = nearWallDist(mesh).y(); //#include "nearWallDist.H"
 
 			if (patchLabel != -1)
 			{
 			    vectorField& tauByRho = wallShearStress.boundaryField()[patchLabel];
 				Info<< "On patch " << patchName << endl;
+				//
 				Info<< "field " << wallShearStress.name() << " component(vector::X)" << endl;
 				scalar mean0 = scalarField_simpleStatistics(tauByRho.component(vector::X));
-
+				//
 				const surfaceScalarField& magSf = mesh.magSf();
 				scalar mean1 = sum(tauByRho.component(vector::X) * magSf.boundaryField()[patchLabel])
 								/
 							   sum(magSf.boundaryField()[patchLabel]);
 				Info<< "surface weighted average : " << mean1 << endl;	   
+				//
+				Info<< "field " << wallShearStress.name() << " mag" << endl;
+				scalar mean2 = scalarField_simpleStatistics(mag(tauByRho));
+				//
+				scalar uTau = Foam::sqrt(mean2);
+				Info<< "uTau " << uTau << endl;
+				//
+				Info<< "field " << "d" << "[" << patchLabel << "]" << " on patch " << patchName << endl;
+				scalar dMean = scalarField_simpleStatistics(d[patchLabel]);
+				//
+				scalarField yPlus = uTau * d[patchLabel] / 1.0e-6;
+				Info<< "!!!!!!!!!!!!!!!!"<< endl;
+				Info<< "nu : " << 1.0e-6 << endl;
+				Info<< "!!!!!!!!!!!!!!!!"<< endl;
+				Info<< "field " << "yPlus" << endl;
+				scalar yPlusMean = scalarField_simpleStatistics(yPlus);
+				//
+				scalarField yPlus1 = mag(tauByRho) * d[patchLabel] / 1.0e-6;
+				Info<< "field " << "yPlus1" << endl;
+				scalar yPlusMean1 = scalarField_simpleStatistics(yPlus1);
 
 				if (!noWriting)
 				{
