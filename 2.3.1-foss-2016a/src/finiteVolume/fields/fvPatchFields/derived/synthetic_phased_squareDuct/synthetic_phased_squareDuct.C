@@ -164,7 +164,7 @@ synthetic_phased_squareDuct::synthetic_phased_squareDuct
 // i-th term of the series of the non-dimensioned part for series for Hagen-poiseuille square duct
 scalar squareDuctUz_i(label i, scalar w, scalar h, scalar x, scalar y)
 {
-	label n = 2*i -1;
+	label n = 2*i -1; // need to change "label" to "scalar" on occigen's intel compiler...
 	scalar Uz_i =  1.0/pow(n,3)
 			   * ( 1.0
 	             - cosh(n * constant::mathematical::pi * x / h)
