@@ -49,7 +49,24 @@ int main(int argc, char *argv[])
 
 			volVectorField UPrime = velocityField - mean;
 	
-	        volTensorField reyTensor
+	        volTensorField reyTensor0
+	        (
+	            IOobject
+	            (
+	                "reyTensor0",
+	                runTime.timeName(),
+	                mesh,
+	                IOobject::NO_READ,
+	                IOobject::NO_WRITE
+	            ),
+				UPrime * UPrime
+			);
+
+            //convert to symmTensor for less storage. And indeed reynTensor0 is mathematically symmetric
+            //volSymmTensorField reyTensor(symm(reyTensor)); short but output name cannot be overwritten
+            //taking the longer version
+
+	        volSymmTensorField reyTensor
 	        (
 	            IOobject
 	            (
@@ -59,10 +76,13 @@ int main(int argc, char *argv[])
 	                IOobject::NO_READ,
 	                IOobject::AUTO_WRITE
 	            ),
-				UPrime * UPrime
+                symm(reyTensor0) // = UPrime * UPrime
 			);
-	
-			reyTensor.write();
+
+            //check for difference
+			//Info<< "diff : " << mag(reyTensor0.internalField() - reyTensor.internalField()) << endl;
+
+			//reyTensor.write();
 	
 	    }
 	}
