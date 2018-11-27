@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 	    runTime.setTime(timeDirs[timeI], timeI); 
 		Info<< "Time = " << runTime.timeName() << endl;
 
-        volTensorField reyTensor
+        volSymmTensorField reyTensor
 	    (
        	    IOobject
 	   	    (
