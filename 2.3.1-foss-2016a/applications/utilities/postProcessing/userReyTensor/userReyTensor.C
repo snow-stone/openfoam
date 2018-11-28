@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
             //check for difference
 			//Info<< "diff : " << mag(reyTensor0.internalField() - reyTensor.internalField()) << endl;
 
-			//reyTensor.write();
+			reyTensor.write();
 	
 	    }
 	}
