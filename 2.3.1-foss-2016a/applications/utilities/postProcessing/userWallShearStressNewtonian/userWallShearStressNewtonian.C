@@ -35,9 +35,6 @@ Description
 
 #include "fvCFD.H"
 
-//#include "incompressible/singlePhaseTransportModel/singlePhaseTransportModel.H"
-//#include "incompressible/RAS/RASModel/RASModel.H"
-
 #include <fstream> // 标准输出，到文件
 #include "nearWallDist.H"
 
@@ -65,16 +62,6 @@ void calcIncompressible
     volVectorField& wallShearStress
 )
 {
-    //#include "createPhi.H"
-
-    //singlePhaseTransportModel laminarTransport(U, phi);
-
-	/*
-    autoPtr<incompressible::RASModel> model
-    (
-        incompressible::RASModel::New(U, phi, laminarTransport)
-    );
-	*/
 	Info<< "inside calcIncompressible nu : " << nu << endl;
 
     const volSymmTensorField Reff = -nu*dev(twoSymm(fvc::grad(U)));
@@ -131,7 +118,6 @@ int main(int argc, char *argv[])
                 runTime.timeName(),
                 mesh,
                 IOobject::NO_READ,
-                //IOobject::AUTO_WRITE
                 IOobject::NO_WRITE
             ),
             mesh,
@@ -142,6 +128,25 @@ int main(int argc, char *argv[])
                 vector::zero
             )
         );
+
+		volScalarField yPlus
+		(
+		    IOobject
+			(
+			    "yPlus",
+				runTime.timeName(),
+				mesh,
+				IOobject::NO_READ,
+				IOobject::AUTO_WRITE
+			),
+			mesh,
+			dimensionedScalar
+			(
+			    "yPlus",
+				dimless,
+				scalar(0.)
+			)
+		);
 
         IOobject UHeader
         (
@@ -165,6 +170,7 @@ int main(int argc, char *argv[])
 			if (patchLabel != -1)
 			{
 			    vectorField& tauByRho = wallShearStress.boundaryField()[patchLabel];
+				scalarField uTau = Foam::sqrt(mag(tauByRho));
 				Info<< "On patch " << patchName << endl;
 				//
 				Info<< "field " << wallShearStress.name() << " component(vector::X)" << endl;
@@ -179,26 +185,22 @@ int main(int argc, char *argv[])
 				Info<< "field " << wallShearStress.name() << " mag" << endl;
 				Info<< "mag(tauByRho) max: " << max(mag(tauByRho)) << endl;
 				Info<< "mag(tauByRho) min: " << min(mag(tauByRho)) << endl;
-				scalar mean2 = scalarField_simpleStatistics(mag(tauByRho));
-				/*
-				//
-				scalar uTau = Foam::sqrt(mean2);
-				Info<< "uTau " << uTau << endl;
+				scalar uTau_mean = Foam::sqrt(scalarField_simpleStatistics(mag(tauByRho)));
 				//
 				Info<< "field " << "d" << "[" << patchLabel << "]" << " on patch " << patchName << endl;
-				scalar dMean = scalarField_simpleStatistics(d[patchLabel]);
+				scalar d_mean = scalarField_simpleStatistics(d[patchLabel]);
 				//
-				scalarField yPlus = uTau * d[patchLabel] / 1.0e-6;
-				Info<< "!!!!!!!!!!!!!!!!"<< endl;
-				Info<< "nu : " << nu << endl;
-				Info<< "!!!!!!!!!!!!!!!!"<< endl;
-				Info<< "field " << "yPlus" << endl;
-				scalar yPlusMean = scalarField_simpleStatistics(yPlus);
-				//
-				scalarField yPlus1 = mag(tauByRho) * d[patchLabel] / 1.0e-6;
-				Info<< "field " << "yPlus1" << endl;
-				scalar yPlusMean1 = scalarField_simpleStatistics(yPlus1);
-				*/
+				scalarField& d_ = d[patchLabel];
+				//scalarField yPlus_ = cmptMultiply(uTau, d_) / nu.value();
+				yPlus.boundaryField()[patchLabel] = cmptMultiply(uTau, d_) / nu.value();
+				//scalarField yPlus = uTau * d_ / nu;
+				//scalarField yPlus = uTau && uTau ;
+				//scalarField yPlus = uTau_mean * d_ / 1.0e-6;
+				//vectorField yPlus = tauByRho * d_ / 1.0e-6;
+				Info<< "field " << " yPlus" << endl;
+				//scalar yPlus_mean = scalarField_simpleStatistics(yPlus_);
+				scalar yPlus_mean = scalarField_simpleStatistics(yPlus.boundaryField()[patchLabel]);
+				Info<< "face number for yPlus max : " << findMax(yPlus.boundaryField()[patchLabel]) << endl;
 
 				if (!noWriting)
 				{
@@ -218,6 +220,8 @@ int main(int argc, char *argv[])
 							<< mean1 << " "
 							<< std::endl;
 					}
+
+					yPlus.write();
 				}
 			}
 			else
