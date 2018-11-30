@@ -10,6 +10,7 @@ int main(int argc, char *argv[])
     timeSelector::addOptions();
     argList::validArgs.append("scalarFieldName");
 	argList::validArgs.append("timeOfAverageField");
+	argList::validArgs.append("sliceStore");
 	argList::validArgs.append("sliceName");
 	Foam::argList::addBoolOption
 	(
@@ -22,7 +23,8 @@ int main(int argc, char *argv[])
 
 	word scalarFieldName(args.additionalArgs()[0]);
 	word timeOfAverageField(args.additionalArgs()[1]);
-	word sliceName(args.additionalArgs()[2]);
+	word sliceStore(args.additionalArgs()[2]);
+	word sliceName(args.additionalArgs()[3]);
 	bool writeLog = !args.optionFound("noWriteLog");
 
     instantList timeDirs = timeSelector::select0(runTime, args);
@@ -33,7 +35,7 @@ int main(int argc, char *argv[])
 	    IOobject
 	    (
 		    sliceName,
-		    "constant",
+			sliceStore,
 			mesh,
 		    IOobject::MUST_READ,
 		    IOobject::NO_WRITE	
@@ -67,10 +69,12 @@ int main(int argc, char *argv[])
     forAll(slice, i)
     {
         slice_T_mean[i] = TMean.internalField()[slice[i]];
+        /*
     	if (i < 3)
     	{
     	    Info<< "TMean[" << slice[i] <<"] : "<< slice_T_mean[i] << endl;
     	}
+		*/
    	}
 
 	mkDir("userDefinedLog");
@@ -80,9 +84,7 @@ int main(int argc, char *argv[])
 		ios_base::app
 	);
 
-	forAll(timeDirs, timeI)
-	{
-		runTime.setTime(timeDirs[timeI], timeI);
+	forAll(timeDirs, timeI) { runTime.setTime(timeDirs[timeI], timeI);
 		Info<< "Time = " << runTime.timeName() << endl;
 
 	    volScalarField T
@@ -105,10 +107,12 @@ int main(int argc, char *argv[])
     	forAll(slice, i)
     	{
     	    slice_T[i] = T.internalField()[slice[i]];
+			/*
     		if (i < 3)
     		{
     		    Info<< "T[" << slice[i] <<"] : "<< slice_T[i] << endl;
     		}
+			*/
     	}
 
 		forAll(slice, i)
@@ -140,6 +144,7 @@ int main(int argc, char *argv[])
 
 	if(nField >= 1)
 	{
+		/*
 	    Info<<"labelList op mean : " << endl;
     	forAll(slice, i)
 		{
@@ -148,6 +153,7 @@ int main(int argc, char *argv[])
     	    	Info<< "T[" << slice[i] <<"] : "<< TMeanTemp[i]/nField << endl;
     		}
     	}
+		*/
 	}
 
     return 0;
