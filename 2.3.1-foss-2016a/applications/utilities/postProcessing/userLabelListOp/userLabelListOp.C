@@ -6,13 +6,13 @@
 int main(int argc, char *argv[])
 {
     timeSelector::addOptions();
-    argList::validArgs.append("velocityFieldName");
+    argList::validArgs.append("scalarFieldName");
 	argList::validArgs.append("timeOfAverageField");
 
     #include "setRootCase.H"
     #include "createTime.H"
 
-	word velocityFieldName(args.additionalArgs()[0]);
+	word scalarFieldName(args.additionalArgs()[0]);
 	word timeOfAverageField(args.additionalArgs()[1]);
 
     instantList timeDirs = timeSelector::select0(runTime, args);
@@ -30,11 +30,11 @@ int main(int argc, char *argv[])
 		)	
 	);
 
-    volVectorField UMean
+    volScalarField TMean
     (
         IOobject
         (
-           velocityFieldName+"_mean",
+           scalarFieldName+"_mean",
 		   timeOfAverageField,
            mesh,
            IOobject::MUST_READ,
@@ -43,19 +43,23 @@ int main(int argc, char *argv[])
         mesh
     );
 
-    vectorField slice_U(slice.size());
-    vectorField slice_U_mean(slice.size());
+	label cellN  = slice.size();
+    scalarField slice_T(cellN);
+    scalarField slice_T_mean(cellN);
 
-    vectorField sum(slice.size(), vector::zero);
-    Info<<" sum = " << sum << endl;
+    scalarField TMeanTemp(cellN, 0.0);
+    Info<<" TMeanTemp = " << TMeanTemp << endl;
 	label nField = 0;
+	scalar TMeanSpatial;
+	scalar TVARSpatial;
+	scalar TRMSSpatial;
 
     forAll(slice, i)
     {
-        slice_U_mean[i] = UMean.internalField()[slice[i]];
+        slice_T_mean[i] = TMean.internalField()[slice[i]];
     	if (i < 3)
     	{
-    	    Info<< "UMean[" << slice[i] <<"] : "<< slice_U_mean[i] << endl;
+    	    Info<< "TMean[" << slice[i] <<"] : "<< slice_T_mean[i] << endl;
     	}
    	}
 
@@ -64,11 +68,11 @@ int main(int argc, char *argv[])
 		runTime.setTime(timeDirs[timeI], timeI);
 		Info<< "Time = " << runTime.timeName() << endl;
 
-	    volVectorField U
+	    volScalarField T
 	    (
 	        IOobject
 		    (
-	            velocityFieldName,
+	            scalarFieldName,
 	            runTime.timeName(),
 	            mesh,
 	            IOobject::MUST_READ,
@@ -77,19 +81,35 @@ int main(int argc, char *argv[])
 		    mesh
 	    );
 
-    	//Info<< "slice : " << slice << endl;
-    	Info<< "size(slice) : " << slice.size() << endl;
+		TMeanSpatial = 0.0;
+		TVARSpatial = 0.0;
+		TRMSSpatial = 0.0;
     
     	forAll(slice, i)
     	{
-    	    slice_U[i] = U.internalField()[slice[i]];
+    	    slice_T[i] = T.internalField()[slice[i]];
     		if (i < 3)
     		{
-    		    Info<< "U[" << slice[i] <<"] : "<< slice_U[i] << endl;
+    		    Info<< "T[" << slice[i] <<"] : "<< slice_T[i] << endl;
     		}
     	}
 
-		sum += slice_U;
+		forAll(slice, i)
+		{
+			TMeanSpatial += slice_T[i];
+		}
+		TMeanSpatial /= cellN;
+		Info<< "TMeanSpatial : " << TMeanSpatial << endl;
+		forAll(slice, i)
+		{
+			TVARSpatial += sqr(slice_T[i] - TMeanSpatial);
+		}
+		TVARSpatial /= cellN;
+		//TRMSSpatial = sqrt(TVARSpatial); // error: call of overloaded ‘sqrt(Foam::scalar&)’ is ambiguous
+		TRMSSpatial = Foam::sqrt(TVARSpatial);
+		Info<< "TRMSSpatial : " << TRMSSpatial << endl;
+
+		TMeanTemp += slice_T;
 		nField++;
 	}
 
@@ -100,7 +120,7 @@ int main(int argc, char *argv[])
 		{
     		if (i < 3)
     		{
-    	    	Info<< "U[" << slice[i] <<"] : "<< sum[i]/nField << endl;
+    	    	Info<< "T[" << slice[i] <<"] : "<< TMeanTemp[i]/nField << endl;
     		}
     	}
 	}
