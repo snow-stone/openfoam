@@ -3,17 +3,27 @@
 #include "timeSelector.H"
 #include "cellSet.H"
 
+#include <fstream>
+
 int main(int argc, char *argv[])
 {
     timeSelector::addOptions();
     argList::validArgs.append("scalarFieldName");
 	argList::validArgs.append("timeOfAverageField");
+	argList::validArgs.append("sliceName");
+	Foam::argList::addBoolOption
+	(
+	    "noWriteLog",
+	    "suppress writting to userDefinedLog/TKE"
+    );
 
     #include "setRootCase.H"
     #include "createTime.H"
 
 	word scalarFieldName(args.additionalArgs()[0]);
 	word timeOfAverageField(args.additionalArgs()[1]);
+	word sliceName(args.additionalArgs()[2]);
+	bool writeLog = !args.optionFound("noWriteLog");
 
     instantList timeDirs = timeSelector::select0(runTime, args);
     #include "createMesh.H"
@@ -22,7 +32,7 @@ int main(int argc, char *argv[])
 	(
 	    IOobject
 	    (
-		    "selectCells",
+		    sliceName,
 		    "constant",
 			mesh,
 		    IOobject::MUST_READ,
@@ -62,6 +72,13 @@ int main(int argc, char *argv[])
     	    Info<< "TMean[" << slice[i] <<"] : "<< slice_T_mean[i] << endl;
     	}
    	}
+
+	mkDir("userDefinedLog");
+	std::ofstream sliceLog
+	(
+		fileName(string("userDefinedLog")/string(sliceName+"_mean_rms")).c_str(),
+		ios_base::app
+	);
 
 	forAll(timeDirs, timeI)
 	{
@@ -111,6 +128,14 @@ int main(int argc, char *argv[])
 
 		TMeanTemp += slice_T;
 		nField++;
+
+		if (writeLog)
+		{
+		    sliceLog << runTime.timeName() << " "
+				     << TMeanSpatial << " "
+				     << TRMSSpatial << " "
+				     << std::endl;	 
+		}
 	}
 
 	if(nField >= 1)
