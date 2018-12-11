@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     timeSelector::addOptions();
     argList::validArgs.append("scalarFieldName");
-	argList::validArgs.append("timeOfAverageField");
+	//argList::validArgs.append("timeOfAverageField");
 	argList::validArgs.append("sliceStore");
 	argList::validArgs.append("sliceName");
 	Foam::argList::addBoolOption
@@ -22,9 +22,9 @@ int main(int argc, char *argv[])
     #include "createTime.H"
 
 	word scalarFieldName(args.additionalArgs()[0]);
-	word timeOfAverageField(args.additionalArgs()[1]);
-	word sliceStore(args.additionalArgs()[2]);
-	word sliceName(args.additionalArgs()[3]);
+	//word timeOfAverageField(args.additionalArgs()[1]);
+	word sliceStore(args.additionalArgs()[1]);
+	word sliceName(args.additionalArgs()[2]);
 	bool writeLog = !args.optionFound("noWriteLog");
 
     instantList timeDirs = timeSelector::select0(runTime, args);
@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
 		)	
 	);
 
+/*
     volScalarField TMean
     (
         IOobject
@@ -54,6 +55,7 @@ int main(int argc, char *argv[])
         ),
         mesh
     );
+*/
 
 	label cellN  = slice.size();
     scalarField slice_T(cellN);
@@ -68,7 +70,7 @@ int main(int argc, char *argv[])
 
     forAll(slice, i)
     {
-        slice_T_mean[i] = TMean.internalField()[slice[i]];
+        //slice_T_mean[i] = TMean.internalField()[slice[i]];
         /*
     	if (i < 3)
     	{
