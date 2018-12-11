@@ -32,29 +32,30 @@ int main(int argc, char *argv[])
 	vector ref = refVectors[0];
 	Info << "ref : " << ref << endl;
 
-    IOList<word> sliceNumber
+    IOList<word> sliceNumberList
 	(
 	    IOobject
 		(
-		    "sliceNumber",
+		    "sliceNumberList",
 		    sliceStore,
 		    runTime,
 		    IOobject::MUST_READ,
 		    IOobject::NO_WRITE	
 		)
 	);
-	Info << sliceNumber << endl;
+	Info << sliceNumberList << endl;
+
+    List<label> labelGroup;
 
     #include "createMesh.H"
-
-	forAll(sliceNumber, i)
+	forAll(sliceNumberList, slicei)
 	{
 	
 		IOList<label> slice
 		(
 		    IOobject
 		    (
-			    slicePrefix+sliceNumber[i],
+			    slicePrefix+sliceNumberList[slicei],
 				sliceStore,
 				mesh,
 			    IOobject::MUST_READ,
@@ -74,14 +75,38 @@ int main(int argc, char *argv[])
 					);
 		}
 	
-		label l_min = findMin(distance);
-	    Info << "index for min " << slice[l_min] << nl
-			 << "coord : "
-			 << mesh.C()[slice[l_min]] << nl
-			 << "distance : "
-			 << distance[l_min]
-			 << endl;
+		label label4min = findMin(distance);
+
+		Info<< "For slicei = " << slicei << endl;
+		Info<< "    @slice" << sliceNumberList[slicei] << endl;
+		Info<< "    label to memorise : " << slice[label4min] << endl;
+		Info<< "    coords : " << mesh.C()[slice[label4min]] << endl;
+		Info<< "    offset relative to the first element of slice : " 
+			<< (slice[label4min] - slice[0]) << endl;
+        Info<< nl;
+
+		labelGroup.append(slice[label4min]);
 	}
+
+	Info<< "labelGroup : "
+        << labelGroup << endl;
+
+	IOList<label> IOlabelGroup
+	(
+	    IOobject
+		(
+		    "labelGroup",
+			"constant",   // cannot write to sliceStore or "." ...
+			runTime,
+			IOobject::NO_READ,
+			IOobject::AUTO_WRITE
+		),
+        labelGroup
+	);
+
+	//write as a labelList. To be read by another program
+	//Info<< "IOlabelGroup : " << IOlabelGroup << endl;
+	IOlabelGroup.write();
 
     return 0;
 }
