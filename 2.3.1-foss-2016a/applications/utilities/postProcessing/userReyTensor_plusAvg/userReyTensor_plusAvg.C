@@ -8,12 +8,18 @@ int main(int argc, char *argv[])
     timeSelector::addOptions();
     argList::validArgs.append("velocityFieldName");
     argList::validArgs.append("timeOfAverageField");
+	Foam::argList::addBoolOption
+	(
+	    "noIntermediateWrite",
+	    "suppress writting for reyTensor"
+    );
 
     #include "setRootCase.H"
     #include "createTime.H"
 
 	word velocityFieldName(args.additionalArgs()[0]);
 	word timeOfAverageField(args.additionalArgs()[1]);
+    bool writeIntermediateField = !args.optionFound("noIntermediateWrite");
 
 	instantList timeDirs = timeSelector::select0(runTime, args);
 	#include "createMesh.H"
@@ -105,7 +111,10 @@ int main(int argc, char *argv[])
             reyTensorMean += reyTensor;
             nFields += 1;
 
-			reyTensor.write();
+            if(writeIntermediateField)
+            {
+			    reyTensor.write();
+            }
 	    }
         if (nFields >= 1)
         {
