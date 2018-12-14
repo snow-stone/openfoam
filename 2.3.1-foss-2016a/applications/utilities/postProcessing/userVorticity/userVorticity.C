@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	mkDir("userDefinedLog");
 	std::ofstream rangeLog
 	(
-	   	fileName(string("userDefinedLog")/string("rangeForField_magCurl"+fieldName)).c_str(),
+	   	fileName(string("userDefinedLog")/string("rangeForField_"+fieldName)).c_str(),
 		ios_base::app
 	);
 
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 			(
                 IOobject
                 (
-                    "vorticityorticity",
+                    string("vorticity_"+fieldName),
                     runTime.timeName(),
                     mesh,
                     IOobject::NO_READ
