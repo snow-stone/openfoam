@@ -62,8 +62,7 @@ int main(int argc, char *argv[])
 	    {
 		    Info<< "headerOk for field : " << fieldName << endl;
 
-		    //volScalarField s(header, mesh);
-		    surfaceScalarField s(header, mesh);
+		    volScalarField s(header, mesh);
 		    const polyBoundaryMesh& pp = mesh.boundaryMesh();
 			const label patchLabel = pp.findPatchID(patchName);
 
@@ -83,22 +82,22 @@ int main(int argc, char *argv[])
 				Info<< "field magSf " << endl;
 				scalarField_simpleStatistics(magSf.boundaryField()[patchLabel]);
 
+				scalar weightedAverage = sum(s_FieldOnPatch * magSf.boundaryField()[patchLabel])
+											/
+										 sum(magSf.boundaryField()[patchLabel]);
     			Info<< fieldName 
-    				<< " surface weighted average :"
-    				<< sum(s_FieldOnPatch * magSf.boundaryField()[patchLabel])
-					          /
-					       sum(magSf.boundaryField()[patchLabel]) << endl;
+    				<< " surface weighted average :" << weightedAverage << endl;
 
-				const surfaceVectorField& Sf = mesh.Sf();
+				//const surfaceVectorField& Sf = mesh.Sf();
 				//Info<< Sf.boundaryField()[patchLabel] << endl;
 				
 				//const surfaceScalarField& phi = runTime.db().lookupObject<surfaceScalarField>("phi"); Grammar works runTime fail
 				//const volVectorField& U = runTime.db().lookupObject<volVectorField>("U"); same...
 				//I suppose .... need to read and register...
 				//Info << s.boundaryField()[patchLabel] << endl;
-				Info<< "field phi " << endl;
+				//Info<< "field phi " << endl;
 				scalarField_simpleStatistics(s.boundaryField()[patchLabel]);
-				Info<< "sum(phi) " << sum(s.boundaryField()[patchLabel]) << endl;
+				//Info<< "sum(phi) " << sum(s.boundaryField()[patchLabel]) << endl;
 			}
 
 			if (!noWriting)
