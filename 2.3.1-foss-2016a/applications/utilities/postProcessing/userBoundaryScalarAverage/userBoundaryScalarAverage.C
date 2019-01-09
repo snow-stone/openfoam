@@ -4,7 +4,6 @@
 
 #include <fstream> // 标准输出，到文件
 //using std::ofstream; // 不加这个class ofstream找不到
-//
 
 void scalarField_simpleStatistics(const scalarField& s)
 {
@@ -27,13 +26,13 @@ int main(int argc, char *argv[])
 	    "no output data to file"
     );
     argList::validArgs.append("fieldName");
-    argList::validArgs.append("patchName");
+    //argList::validArgs.append("patchName");
 
 	#include "setRootCase.H"
     #include "createTime.H"
 
 	word fieldName(args.additionalArgs()[0]);
-	word patchName(args.additionalArgs()[1]);
+	//word patchName(args.additionalArgs()[1]);
 	bool noWriting = args.optionFound("noWrite");
 
 	instantList timeDirs = timeSelector::select0(runTime, args);
@@ -44,6 +43,8 @@ int main(int argc, char *argv[])
 	{
 	    mkDir("postProcessing");
 	}
+
+	word patchName = "Port2";
 
 	forAll(timeDirs, timeI)
 	{
