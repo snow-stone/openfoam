@@ -1,0 +1,2 @@
+LOCAL_OBJECTS = \
+userLabelListOp_Dai_slices.o
