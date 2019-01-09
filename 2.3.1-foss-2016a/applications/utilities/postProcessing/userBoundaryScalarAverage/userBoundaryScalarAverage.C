@@ -33,23 +33,20 @@ int main(int argc, char *argv[])
 
 	word fieldName(args.additionalArgs()[0]);
 	//word patchName(args.additionalArgs()[1]);
-	bool noWriting = args.optionFound("noWrite");
+	//bool noWriting = args.optionFound("noWrite");
 
 	instantList timeDirs = timeSelector::select0(runTime, args);
 
 	#include "createMesh.H"
 
-	if(!noWriting)
-	{
-	    mkDir("postProcessing");
-	}
+    mkDir("userDefinedLog");
 
 	word patchName = "Port2";
-	wordList inletsAndOutlet;
-	inletsAndOutlet.append("Port1");
-	inletsAndOutlet.append("Port2");
-	inletsAndOutlet.append("Port3");
-	Info << inletsAndOutlet << endl;
+	wordList patchNameList;
+	patchNameList.append("Port1");
+	patchNameList.append("Port2");
+	patchNameList.append("Port3");
+	Info << patchNameList << endl;
 
 	forAll(timeDirs, timeI)
 	{
@@ -70,13 +67,14 @@ int main(int argc, char *argv[])
 
 		    volScalarField s(header, mesh);
 		    const polyBoundaryMesh& pp = mesh.boundaryMesh();
+
+            forAll(patchNameList, i)
+            {
+			patchName = patchNameList[i];
 			const label patchLabel = pp.findPatchID(patchName);
 
 			if (patchLabel != -1)
 			{
-				// Downgraded to scalarField. But... boundaryField() has no dimension so
-				// it is not really a downgrade. (Meaning it's different when taking max
-				// of an internalField(). The output will give its dimension etc...
 				scalarField& s_FieldOnPatch = s.boundaryField()[patchLabel];
 				Info<< "On patch " << patchName << endl;
 
@@ -84,7 +82,6 @@ int main(int argc, char *argv[])
 				scalarField_simpleStatistics(s_FieldOnPatch);
 
 				const surfaceScalarField& magSf = mesh.magSf();
-				//Info<< magSf.boundaryField()[patchLabel] << endl;
 				Info<< "field magSf " << endl;
 				scalarField_simpleStatistics(magSf.boundaryField()[patchLabel]);
 
@@ -94,43 +91,19 @@ int main(int argc, char *argv[])
     			Info<< fieldName 
     				<< " surface weighted average :" << weightedAverage << endl;
 
-				//const surfaceVectorField& Sf = mesh.Sf();
-				//Info<< Sf.boundaryField()[patchLabel] << endl;
-				
-				//const surfaceScalarField& phi = runTime.db().lookupObject<surfaceScalarField>("phi"); Grammar works runTime fail
-				//const volVectorField& U = runTime.db().lookupObject<volVectorField>("U"); same...
-				//I suppose .... need to read and register...
-				//Info << s.boundaryField()[patchLabel] << endl;
-				//Info<< "field phi " << endl;
 				scalarField_simpleStatistics(s.boundaryField()[patchLabel]);
-				//Info<< "sum(phi) " << sum(s.boundaryField()[patchLabel]) << endl;
-			}
-
-			if (!noWriting)
-			{
-
-				if (patchLabel != -1)
-				{
-        	        std::ofstream txtOutput
-        	        (
-        	   	        fileName(
-        				    string("postProcessing")/string("txtBoundary_"+patchName+"_"+fieldName+"_"+runTime.timeName())
-        				).c_str(),
-        		        ios_base::app
-        	        );
+				
+        	    std::ofstream output
+        	    (
+        	   	    fileName(
+        			    string("userDefinedLog")/string("boundaryMean_"+fieldName)
+        			).c_str(),
+        		    ios_base::app
+        	    );
         
-        			forAll(s.boundaryField()[patchLabel], i)
-        			{
-        			    txtOutput
-        				    << s.boundaryField()[patchLabel][i]
-        				    << std::endl;
-        			}
-				}
-				else
-				{
-				    Info<< "No patch named " << patchName << endl;
-				}
+        		output << weightedAverage << std::endl;
 			}
+            }
 	    }
 	    else
 	    {
