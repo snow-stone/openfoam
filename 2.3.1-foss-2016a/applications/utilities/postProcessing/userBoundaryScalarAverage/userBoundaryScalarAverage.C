@@ -46,6 +46,8 @@ int main(int argc, char *argv[])
 	patchNameList.append("Port1");
 	patchNameList.append("Port2");
 	patchNameList.append("Port3");
+
+	scalarList weightedAverageList(3);
 	Info << patchNameList << endl;
 
 	forAll(timeDirs, timeI)
@@ -70,40 +72,44 @@ int main(int argc, char *argv[])
 
             forAll(patchNameList, i)
             {
-			patchName = patchNameList[i];
-			const label patchLabel = pp.findPatchID(patchName);
-
-			if (patchLabel != -1)
-			{
-				scalarField& s_FieldOnPatch = s.boundaryField()[patchLabel];
-				Info<< "On patch " << patchName << endl;
-
-				Info<< "field " << fieldName << endl;
-				scalarField_simpleStatistics(s_FieldOnPatch);
-
-				const surfaceScalarField& magSf = mesh.magSf();
-				Info<< "field magSf " << endl;
-				scalarField_simpleStatistics(magSf.boundaryField()[patchLabel]);
-
-				scalar weightedAverage = sum(s_FieldOnPatch * magSf.boundaryField()[patchLabel])
-											/
-										 sum(magSf.boundaryField()[patchLabel]);
-    			Info<< fieldName 
-    				<< " surface weighted average :" << weightedAverage << endl;
-
-				scalarField_simpleStatistics(s.boundaryField()[patchLabel]);
-				
-        	    std::ofstream output
-        	    (
-        	   	    fileName(
-        			    string("userDefinedLog")/string("boundaryMean_"+fieldName)
-        			).c_str(),
-        		    ios_base::app
-        	    );
-        
-        		output << weightedAverage << std::endl;
-			}
+    			patchName = patchNameList[i];
+    			const label patchLabel = pp.findPatchID(patchName);
+    
+    			if (patchLabel != -1)
+    			{
+    				scalarField& s_FieldOnPatch = s.boundaryField()[patchLabel];
+    				Info<< "On patch " << patchName << endl;
+    
+    				Info<< "field " << fieldName << endl;
+    				scalarField_simpleStatistics(s_FieldOnPatch);
+    
+    				const surfaceScalarField& magSf = mesh.magSf();
+    				Info<< "field magSf " << endl;
+    				scalarField_simpleStatistics(magSf.boundaryField()[patchLabel]);
+    
+    				weightedAverageList[i] = sum(s_FieldOnPatch * magSf.boundaryField()[patchLabel])
+    											/
+    										 sum(magSf.boundaryField()[patchLabel]);
+        			Info<< fieldName 
+        				<< " surface weighted average :" << weightedAverageList[i] << endl;
+    
+    				scalarField_simpleStatistics(s.boundaryField()[patchLabel]);
+    				
+    			}
             }
+            std::ofstream output
+            (
+                fileName(
+                        string("userDefinedLog")/string("boundaryMean_"+fieldName)
+            			).c_str(),
+            	ios_base::app
+            );
+            
+           	output << runTime.timeName()
+				   << " " << weightedAverageList[0] 
+				   << " " << weightedAverageList[1]
+				   << " " << weightedAverageList[2]
+				   << std::endl;
 	    }
 	    else
 	    {
