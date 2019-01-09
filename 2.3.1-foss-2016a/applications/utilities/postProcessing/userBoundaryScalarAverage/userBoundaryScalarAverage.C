@@ -45,6 +45,11 @@ int main(int argc, char *argv[])
 	}
 
 	word patchName = "Port2";
+	wordList inletsAndOutlet;
+	inletsAndOutlet.append("Port1");
+	inletsAndOutlet.append("Port2");
+	inletsAndOutlet.append("Port3");
+	Info << inletsAndOutlet << endl;
 
 	forAll(timeDirs, timeI)
 	{
