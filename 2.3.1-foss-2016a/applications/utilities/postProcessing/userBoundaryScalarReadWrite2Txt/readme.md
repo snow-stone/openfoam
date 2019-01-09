@@ -13,7 +13,7 @@ range
 - 求和的话，就能算出那个面上的通量(几乎等同于patchIntegrate phi)
 
 ## How To Use
-userBoundaryScalarReadWrite2Txt phi movingWall -time '0.5'
+userBoundaryScalarReadWrite2Txt phi movingWall -time '0.5' (only works for phi not for p)
 
 ## Limit
 
