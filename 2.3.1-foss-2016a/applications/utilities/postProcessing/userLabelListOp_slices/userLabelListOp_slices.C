@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
 	    std::ofstream sliceLog
 	    (
-		    fileName(string("userDefinedLog")/string(sliceName+"_mean_rms_Dai")).c_str(),
+		    fileName(string("userDefinedLog")/string(scalarFieldName+"_"+sliceName+"_mean_rms")).c_str(),
 		    ios_base::app
 	    );
 
