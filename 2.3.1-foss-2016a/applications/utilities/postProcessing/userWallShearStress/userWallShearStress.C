@@ -97,7 +97,8 @@ int main(int argc, char *argv[])
 
     #include "addRegionOption.H"
 
-    #include "setRootCase.H" #include "createTime.H"
+    #include "setRootCase.H" 
+	#include "createTime.H"
     instantList timeDirs = timeSelector::select0(runTime, args);
     word fieldName(args.additionalArgs()[0]);
     word patchName(args.additionalArgs()[1]);
