@@ -91,8 +91,8 @@ int main(int argc, char *argv[])
     argList::validArgs.append("patchName");
 	Foam::argList::addBoolOption
 	(
-	    "noWrite",
-	    "no output data to file"
+		"noWrite",
+		"no output data to file"
 	);
 
     #include "addRegionOption.H"
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 
 	if(!noWriting)
 	{
-	    mkDir("postProcessing");
+		mkDir("postProcessing");
 	}
 
     forAll(timeDirs, timeI)
@@ -151,13 +151,13 @@ int main(int argc, char *argv[])
             volVectorField U(UHeader, mesh);
             calcIncompressible(mesh, runTime, U, wallShearStress);
 
-		    const polyBoundaryMesh& pp = mesh.boundaryMesh();
+			const polyBoundaryMesh& pp = mesh.boundaryMesh();
 			const label patchLabel = pp.findPatchID(patchName);
 			volScalarField::GeometricBoundaryField d = nearWallDist(mesh).y(); //#include "nearWallDist.H"
 
 			if (patchLabel != -1)
 			{
-			    vectorField& tauByRho = wallShearStress.boundaryField()[patchLabel];
+				vectorField& tauByRho = wallShearStress.boundaryField()[patchLabel];
 				Info<< "On patch " << patchName << endl;
 				//
 				Info<< "field " << wallShearStress.name() << " component(vector::X)" << endl;
@@ -191,18 +191,18 @@ int main(int argc, char *argv[])
 
 				if (!noWriting)
 				{
-        	        std::ofstream txtOutput
+					std::ofstream txtOutput
 					(
-					    fileName(
-							    string("postProcessing")/string("txtWallShearStressCmptXMean_Boundary_"+patchName+"_"+fieldName)
+						fileName(
+								string("postProcessing")/string("txtWallShearStressCmptXMean_Boundary_"+patchName+"_"+fieldName)
 								).c_str(),
-					    ios_base::app
+						ios_base::app
 					);
 
 					forAll(wallShearStress.boundaryField()[patchLabel], i)
 					{
-					    txtOutput
-						    << runTime.timeName() << " "
+						txtOutput
+							<< runTime.timeName() << " "
 							<< mean0 << " "
 							<< mean1 << " "
 							<< std::endl;
