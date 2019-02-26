@@ -1,2 +1,0 @@
-OBJECTS = \
-$(OBJECTS_DIR)/userProbeByLabel_noMean.o
