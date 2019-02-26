@@ -1,0 +1,2 @@
+LOCAL_OBJECTS = \
+userProbeByLabel_noMean.o
