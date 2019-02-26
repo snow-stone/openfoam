@@ -11,5 +11,6 @@ set -x
 
 # postProcessing is the dir name underwhich wmake will be executed recursively
 wmake all postProcessing $* 
+wmake all preProcessing $* 
 
 # ----------------------------------------------------------------- end-of-file
