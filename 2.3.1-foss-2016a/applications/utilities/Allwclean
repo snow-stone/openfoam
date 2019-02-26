@@ -1,0 +1,16 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+
+[ -n "$FOAM_USER_APPBIN" ] || {
+    echo "Error: FOAM_USER_APPBIN not set"
+    echo "    Check the OpenFOAM entries in your dot-files and source them."
+    exit 1
+}
+
+set -x
+
+# postProcessing is the dir name underwhich wmake will be executed recursively
+wclean all postProcessing $* 
+wclean all preProcessing $* 
+
+# ----------------------------------------------------------------- end-of-file
