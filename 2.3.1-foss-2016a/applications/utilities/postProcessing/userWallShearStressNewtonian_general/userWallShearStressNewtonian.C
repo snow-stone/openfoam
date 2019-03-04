@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 		(
 		    IOobject
 			(
-			    "yPlus",
+			    "yPlus_"+fieldName,
 				runTime.timeName(),
 				mesh,
 				IOobject::NO_READ,
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 			mesh,
 			dimensionedScalar
 			(
-			    "yPlus",
+			    "yPlus", // IOobject overwrites this ?
 				dimless,
 				scalar(0.)
 			)
@@ -172,52 +172,30 @@ int main(int argc, char *argv[])
 			    vectorField& tauByRho = wallShearStress.boundaryField()[patchLabel];
 				scalarField uTau = Foam::sqrt(mag(tauByRho));
 				Info<< "On patch " << patchName << endl;
-				//
-				Info<< "field " << wallShearStress.name() << " component(vector::X)" << endl;
-				scalar mean0 = scalarField_simpleStatistics(tauByRho.component(vector::X));
-				//
-				const surfaceScalarField& magSf = mesh.magSf();
-				scalar mean1 = sum(tauByRho.component(vector::X) * magSf.boundaryField()[patchLabel])
-								/
-							   sum(magSf.boundaryField()[patchLabel]);
-				Info<< "surface weighted average : " << mean1 << endl;	   
-				//
-				Info<< "field " << wallShearStress.name() << " mag" << endl;
-				Info<< "mag(tauByRho) max: " << max(mag(tauByRho)) << endl;
-				Info<< "mag(tauByRho) min: " << min(mag(tauByRho)) << endl;
-				scalar uTau_mean = Foam::sqrt(scalarField_simpleStatistics(mag(tauByRho)));
-				//
-				Info<< "field " << "d" << "[" << patchLabel << "]" << " on patch " << patchName << endl;
-				scalar d_mean = scalarField_simpleStatistics(d[patchLabel]);
-				//
 				scalarField& d_ = d[patchLabel];
-				//scalarField yPlus_ = cmptMultiply(uTau, d_) / nu.value();
-				yPlus.boundaryField()[patchLabel] = cmptMultiply(uTau, d_) / nu.value();
-				//scalarField yPlus = uTau * d_ / nu;
-				//scalarField yPlus = uTau && uTau ;
-				//scalarField yPlus = uTau_mean * d_ / 1.0e-6;
-				//vectorField yPlus = tauByRho * d_ / 1.0e-6;
-				Info<< "field " << " yPlus" << endl;
-				//scalar yPlus_mean = scalarField_simpleStatistics(yPlus_);
-				scalar yPlus_mean = scalarField_simpleStatistics(yPlus.boundaryField()[patchLabel]);
-				Info<< "face number for yPlus max : " << findMax(yPlus.boundaryField()[patchLabel]) << endl;
+				yPlus.boundaryField()[patchLabel] = uTau * d_ / 1e-6;
+                Info << "d_ : " << endl;
+                scalar dMean = scalarField_simpleStatistics(d_);
+                Info << "uTau : " << endl;
+                scalar uTauMean = scalarField_simpleStatistics(uTau);
+                Info << "yPlus : " << endl;
+                scalar yPlusMean = scalarField_simpleStatistics(yPlus.boundaryField()[patchLabel]);
 
 				if (!noWriting)
 				{
         	        std::ofstream txtOutput
 					(
 					    fileName(
-							    string("postProcessing")/string("txtWallShearStressCmptXMean_Boundary_"+patchName+"_"+fieldName)
+							    string("postProcessing")/string(yPlus.name())
 								).c_str(),
 					    ios_base::app
 					);
 
-					forAll(wallShearStress.boundaryField()[patchLabel], i)
+					forAll(yPlus.boundaryField()[patchLabel], i)
 					{
 					    txtOutput
 						    << runTime.timeName() << " "
-							<< mean0 << " "
-							<< mean1 << " "
+                            << yPlus.boundaryField()[patchLabel][i] << " "
 							<< std::endl;
 					}
 
