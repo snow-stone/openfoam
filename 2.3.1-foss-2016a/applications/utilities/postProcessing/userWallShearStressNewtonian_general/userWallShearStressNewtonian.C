@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 			mesh,
 			dimensionedScalar
 			(
-			    "yPlus", // IOobject overwrites this ?
+			    "yPlus", // confirm IOobject overwrites this
 				dimless,
 				scalar(0.)
 			)
