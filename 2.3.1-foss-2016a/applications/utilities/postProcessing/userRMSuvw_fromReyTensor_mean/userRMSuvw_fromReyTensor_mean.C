@@ -51,6 +51,25 @@ int main(int argc, char *argv[])
 		)
 	);
 
+	volScalarField uvMean
+	(
+	    IOobject
+	    (
+	       "uv_mean",
+	       runTime.timeName(),
+	       mesh,
+	       IOobject::NO_READ,
+	       IOobject::AUTO_WRITE
+	    ),
+		mesh,
+		dimensionedScalar
+		(
+		    "uv_mean",
+		    sqr(dimVelocity),
+			0.0
+		)
+	);
+
 	volScalarField wwMean
 	(
 	    IOobject
@@ -88,10 +107,12 @@ int main(int argc, char *argv[])
 	    );
 
 		uuMean = reyTensorMean.component(symmTensor::XX);
+		uvMean = reyTensorMean.component(symmTensor::XY);
 		vvMean = reyTensorMean.component(symmTensor::YY);
 		wwMean = reyTensorMean.component(symmTensor::ZZ);
 
         uuMean.write();
+        uvMean.write();
         vvMean.write();
         wwMean.write();
     }
